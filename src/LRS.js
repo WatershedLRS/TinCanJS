@@ -310,7 +310,8 @@ TinCan client library
         saveStatement: function (stmt, cfg) {
             this.log("saveStatement");
             var requestCfg,
-                versionedStatement;
+                versionedStatement,
+                header;
 
             cfg = cfg || {};
 
@@ -348,6 +349,15 @@ TinCan client library
                     "Content-Type": "application/json"
                 }
             };
+
+            if (cfg.headers) {
+                for (header in cfg.headers) {
+                    if (cfg.headers.hasOwnProperty(header)) {
+                        requestCfg.headers[header] = cfg.headers[header];
+                    }
+                }
+            }
+
             if (stmt.id !== null) {
                 requestCfg.method = "PUT";
                 requestCfg.params = {

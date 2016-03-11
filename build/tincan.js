@@ -495,9 +495,12 @@ var TinCan;
         @method sendStatement
         @param {TinCan.Statement|Object} statement Send statement to LRS
         @param {Function} [callback] Callback function to execute on completion
+        @param {Object} [cfg] Configuration for request (optional)
         */
-        sendStatement: function (stmt, callback) {
+        sendStatement: function (stmt, callback, cfg) {
             this.log("sendStatement");
+
+            cfg = cfg || {};
 
             // would prefer to use .bind instead of 'self'
             var self = this,
@@ -555,8 +558,10 @@ var TinCan;
                 for (i = 0; i < rsCount; i += 1) {
                     lrs = this.recordStores[i];
 
+                    cfg.callback = callbackWrapper;
+
                     results.push(
-                        lrs.saveStatement(statement, { callback: callbackWrapper })
+                        lrs.saveStatement(statement, cfg)
                     );
                 }
             }
@@ -757,9 +762,13 @@ var TinCan;
         @method sendStatements
         @param {Array} Array of statements to send
         @param {Function} Callback function to execute on completion
+        @param {Object} [cfg] Configuration for request (optional)
         */
-        sendStatements: function (stmts, callback) {
+        sendStatements: function (stmts, callback, cfg) {
             this.log("sendStatements");
+
+            cfg = cfg || {};
+
             var self = this,
                 lrs,
                 statements = [],
@@ -827,8 +836,10 @@ var TinCan;
                     for (i = 0; i < rsCount; i += 1) {
                         lrs = this.recordStores[i];
 
+                        cfg.callback = callbackWrapper;
+
                         results.push(
-                            lrs.saveStatements(statements, { callback: callbackWrapper })
+                            lrs.saveStatements(statements, cfg)
                         );
                     }
                 }
@@ -2095,7 +2106,8 @@ TinCan client library
         saveStatement: function (stmt, cfg) {
             this.log("saveStatement");
             var requestCfg,
-                versionedStatement;
+                versionedStatement,
+                header;
 
             cfg = cfg || {};
 
@@ -2133,6 +2145,15 @@ TinCan client library
                     "Content-Type": "application/json"
                 }
             };
+
+            if (cfg.headers) {
+                for (header in cfg.headers) {
+                    if (cfg.headers.hasOwnProperty(header)) {
+                        requestCfg.headers[header] = cfg.headers[header];
+                    }
+                }
+            }
+
             if (stmt.id !== null) {
                 requestCfg.method = "PUT";
                 requestCfg.params = {
